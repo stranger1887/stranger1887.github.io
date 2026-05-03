@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>정보 수업 포털</title>
+    <style>
+        :root { --bg-body: #1e1e1e; --bg-sidebar: #252526; --bg-card: #333333; --text-main: #cccccc; --text-bright: #ffffff; --primary: #007acc; }
+        body { margin: 0; font-family: 'Malgun Gothic', sans-serif; display: flex; height: 100vh; background: var(--bg-body); color: var(--text-main); }
+        
+        #sidebar { width: 260px; background: var(--bg-sidebar); border-right: 1px solid #444; padding: 25px; flex-shrink: 0; }
+        #sidebar h2 { font-size: 1.3rem; margin-bottom: 30px; text-align: center; color: var(--primary); cursor: pointer; }
+        .menu-item { padding: 15px; cursor: pointer; border-radius: 8px; margin-bottom: 8px; transition: 0.3s; }
+        .menu-item:hover { background: #3a3a3a; }
+        .menu-item.active { background: var(--primary); color: white; }
+
+        #content { flex-grow: 1; padding: 50px; overflow-y: auto; }
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 30px; }
+        
+        /* 카드 스타일 */
+        .card { background: var(--bg-card); border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid #444; }
+        .card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .card img { width: 100%; height: 150px; object-fit: cover; border-radius: 10px; margin-bottom: 15px; }
+        .card h3 { color: var(--text-bright); margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<nav id="sidebar">
+    <h2 onclick="showHome()">정보 수업</h2>
+    <div class="menu-item" onclick="loadUnit('unit1')">1단원: 문학의 힘</div>
+    <div class="menu-item" onclick="loadUnit('unit2')">2단원: 경제와 문학</div>
+</nav>
+
+<main id="content">
+    <h1 id="unit-title">수업 홈 화면</h1>
+    <div class="grid-container" id="main-view">
+        </div>
+</main>
+
+<script>
+    const data = {
+        'unit1': { title: '1단원: 문학의 힘', tools: [{ name: '타자 연습', icon: '⌨️', url: './typing/index.html' }] },
+        'unit2': { title: '2단원: 경제와 문학', tools: [{ name: '경제 퀴즈', icon: '💰', url: './economy/index.html' }] }
+    };
+
+    // 홈 화면 렌더링
+    function showHome() {
+        document.getElementById('unit-title').innerText = "학습 단원 선택";
+        const container = document.getElementById('main-view');
+        container.innerHTML = `
+            <div class="card" onclick="loadUnit('unit1')">
+                <img src="https://via.placeholder.com/250x150" alt="단원1">
+                <h3>1단원: 문학의 힘</h3>
+            </div>
+            <div class="card" onclick="loadUnit('unit2')">
+                <img src="https://via.placeholder.com/250x150" alt="단원2">
+                <h3>2단원: 경제와 문학</h3>
+            </div>
+        `;
+    }
+
+    // 단원 내용 렌더링
+    function loadUnit(unitId) {
+        const unit = data[unitId];
+        document.getElementById('unit-title').innerText = unit.title;
+        const container = document.getElementById('main-view');
+        container.innerHTML = unit.tools.map(t => `
+            <div class="card" onclick="location.href='${t.url}'">
+                <div style="font-size: 3rem;">${t.icon}</div>
+                <h3>${t.name}</h3>
+            </div>
+        `).join('');
+    }
+
+    showHome(); // 시작 시 홈 화면 표시
+</script>
+</body>
+</html>
