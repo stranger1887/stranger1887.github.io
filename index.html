@@ -2,77 +2,186 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>정보 수업 포털</title>
+    <title>알고리즘 정렬 실습 - 타임 어택</title>
     <style>
-        :root { --bg-body: #1e1e1e; --bg-sidebar: #252526; --bg-card: #333333; --text-main: #cccccc; --text-bright: #ffffff; --primary: #007acc; }
-        body { margin: 0; font-family: 'Malgun Gothic', sans-serif; display: flex; height: 100vh; background: var(--bg-body); color: var(--text-main); }
+        body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; background: #f8f9fa; padding: 15px; text-align: center; user-select: none; color: #333; }
         
-        #sidebar { width: 260px; background: var(--bg-sidebar); border-right: 1px solid #444; padding: 25px; flex-shrink: 0; }
-        #sidebar h2 { font-size: 1.3rem; margin-bottom: 30px; text-align: center; color: var(--primary); cursor: pointer; }
-        .menu-item { padding: 15px; cursor: pointer; border-radius: 8px; margin-bottom: 8px; transition: 0.3s; }
-        .menu-item:hover { background: #3a3a3a; }
-        .menu-item.active { background: var(--primary); color: white; }
+        /* 제목 및 문제상황 */
+        .header-box { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; border-left: 8px solid #34495e; }
+        h1 { margin: 0 0 10px 0; color: #2c3e50; font-size: 28px; }
+        .scenario { font-size: 16px; line-height: 1.6; color: #555; background: #f1f3f5; padding: 15px; border-radius: 8px; margin: 10px 0; font-weight: 500; }
 
-        #content { flex-grow: 1; padding: 50px; overflow-y: auto; }
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 30px; }
+        /* 타이머 및 컨트롤 */
+        .control-panel { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .timer-display { font-family: 'Courier New', Courier, monospace; font-size: 36px; font-weight: bold; color: #e67e22; background: #fff; padding: 5px 20px; border-radius: 8px; border: 2px solid #e67e22; min-width: 120px; }
+        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; font-size: 15px; transition: 0.2s; }
+        .btn-reset { background: #34495e; color: white; }
+        .btn-start { background: #27ae60; color: white; }
+        .btn-stop { background: #c0392b; color: white; }
+        button:hover { opacity: 0.8; }
+
+        /* 카드 영역 */
+        #deck-zone { display: flex; flex-wrap: wrap; gap: 5px; background: #fff; border: 2px solid #dee2e6; padding: 15px; border-radius: 10px; min-height: 75px; margin-bottom: 15px; justify-content: center; }
+        
+        #work-zone { width: 95%; height: 380px; background: #f1f3f5; border: 2px dashed #adb5bd; border-radius: 10px; margin: 0 auto 20px auto; position: relative; overflow: hidden; }
+        
+        .final-wrapper { display: flex; align-items: center; justify-content: center; gap: 25px; margin-bottom: 20px; }
+        .final-slot-container { display: flex; flex-direction: column; align-items: center; }
+        .final-slot { width: 60px; height: 90px; background: #e8f5e9; border: 3px solid #2e7d32; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+        
+        #status-display { font-size: 22px; font-weight: bold; color: #2e7d32; background: #fff; padding: 15px 25px; border-radius: 12px; border: 2px solid #2e7d32; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         
         /* 카드 스타일 */
-        .card { background: var(--bg-card); border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid #444; }
-        .card:hover { transform: translateY(-5px); border-color: var(--primary); }
-        .card img { width: 100%; height: 150px; object-fit: cover; border-radius: 10px; margin-bottom: 15px; }
-        .card h3 { color: var(--text-bright); margin-bottom: 10px; }
+        .card { width: 45px; height: 70px; border: 1px solid #333; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; cursor: grab; background: white; font-size: 14px; box-shadow: 2px 2px 4px rgba(0,0,0,0.2); z-index: 10; }
+        .red { color: #e74c3c; }
+        .black { color: #2c3e50; }
     </style>
 </head>
 <body>
 
-<nav id="sidebar">
-    <h2 onclick="showHome()">정보 수업</h2>
-    <div class="menu-item" onclick="loadUnit('unit1')">1단원: 문학의 힘</div>
-    <div class="menu-item" onclick="loadUnit('unit2')">2단원: 경제와 문학</div>
-</nav>
-
-<main id="content">
-    <h1 id="unit-title">수업 홈 화면</h1>
-    <div class="grid-container" id="main-view">
+    <div class="header-box">
+        <h1>🎴 알고리즘 정렬 실습</h1>
+        <div class="scenario">
+            <strong>문제상황 :</strong> 13장씩 스페이드, 하트, 크로바, 다이아몬드 모양과 숫자로 구성된 섞여 있는 52장의 카드를 <br>
+            숫자마다 스페이드, 하트, 크로바, 다이아몬드 순으로 정리하려고 한다. 어떻게 해야할까?
         </div>
-</main>
+    </div>
 
-<script>
-    const data = {
-        'unit1': { title: '1단원: 문학의 힘', tools: [{ name: '타자 연습', icon: '⌨️', url: './typing/index.html' }] },
-        'unit2': { title: '2단원: 경제와 문학', tools: [{ name: '경제 퀴즈', icon: '💰', url: './economy/index.html' }] }
-    };
+    <div class="control-panel">
+        <button class="btn-reset" onclick="resetDeck()">카드 섞기/초기화</button>
+        <button class="btn-start" onclick="startTimer()">시작</button>
+        <button class="btn-stop" onclick="stopTimer()">정지</button>
+        <div class="timer-display" id="timer">0.0s</div>
+    </div>
 
-    // 홈 화면 렌더링
-    function showHome() {
-        document.getElementById('unit-title').innerText = "학습 단원 선택";
-        const container = document.getElementById('main-view');
-        container.innerHTML = `
-            <div class="card" onclick="loadUnit('unit1')">
-                <img src="https://via.placeholder.com/250x150" alt="단원1">
-                <h3>1단원: 문학의 힘</h3>
-            </div>
-            <div class="card" onclick="loadUnit('unit2')">
-                <img src="https://via.placeholder.com/250x150" alt="단원2">
-                <h3>2단원: 경제와 문학</h3>
-            </div>
-        `;
-    }
+    <div id="deck-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
 
-    // 단원 내용 렌더링
-    function loadUnit(unitId) {
-        const unit = data[unitId];
-        document.getElementById('unit-title').innerText = unit.title;
-        const container = document.getElementById('main-view');
-        container.innerHTML = unit.tools.map(t => `
-            <div class="card" onclick="location.href='${t.url}'">
-                <div style="font-size: 3rem;">${t.icon}</div>
-                <h3>${t.name}</h3>
-            </div>
-        `).join('');
-    }
+    <div id="work-zone" ondrop="drop(event)" ondragover="allowDrop(event)">
+        <p style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:#adb5bd; z-index:0; font-size:24px; font-weight:bold;">자유 배치 작업 구역</p>
+    </div>
 
-    showHome(); // 시작 시 홈 화면 표시
-</script>
+    <div class="final-wrapper">
+        <div class="final-slot-container">
+            <h3 style="margin:0 0 8px 0; color:#2e7d32;">정렬구역</h3>
+            <div id="final-slot" class="final-slot" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        </div>
+        <div id="status-display">다음 제출 카드: ♠A</div>
+    </div>
+
+    <script>
+        const suits = ['♠', '♥', '♣', '♦'];
+        const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        
+        let expectedSequence = [];
+        ranks.forEach(r => { suits.forEach(s => { expectedSequence.push({ suit: s, rank: r }); }); });
+
+        let currentIdx = 0;
+        let timerInterval = null;
+        let timeElapsed = 0; // 0.1초 단위
+
+        function startTimer() {
+            if (timerInterval) return;
+            timerInterval = setInterval(() => {
+                timeElapsed++;
+                document.getElementById('timer').innerText = (timeElapsed / 10).toFixed(1) + "s";
+            }, 100);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+
+        function resetDeck() {
+            stopTimer();
+            timeElapsed = 0;
+            document.getElementById('timer').innerText = "0.0s";
+            currentIdx = 0;
+            updateStatus();
+            
+            const deckZone = document.getElementById('deck-zone');
+            const workZone = document.getElementById('work-zone');
+            const finalSlot = document.getElementById('final-slot');
+            
+            // 초기화 시 텍스트 가이드 유지
+            workZone.innerHTML = '<p style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:#adb5bd; z-index:0; font-size:24px; font-weight:bold;">자유 배치 작업 구역</p>';
+            deckZone.innerHTML = '';
+            finalSlot.innerHTML = '';
+
+            let deck = [];
+            suits.forEach(s => ranks.forEach(r => deck.push({ suit: s, rank: r })));
+            deck.sort(() => Math.random() - 0.5);
+
+            deck.forEach((c, i) => {
+                const div = document.createElement('div');
+                div.className = `card ${c.suit === '♥' || c.suit === '♦' ? 'red' : 'black'}`;
+                div.draggable = true;
+                div.innerText = `${c.suit}${c.rank}`;
+                div.id = 'card-' + i;
+                div.dataset.suit = c.suit;
+                div.dataset.rank = c.rank;
+                div.addEventListener('dragstart', drag);
+                deckZone.appendChild(div);
+            });
+        }
+
+        function updateStatus() {
+            const status = document.getElementById('status-display');
+            if(currentIdx < expectedSequence.length) {
+                status.innerText = `다음 제출 카드: ${expectedSequence[currentIdx].suit}${expectedSequence[currentIdx].rank}`;
+            } else {
+                status.innerText = "🎉 미션 완료! 최단 기록을 확인하세요!";
+                stopTimer();
+            }
+        }
+
+        function allowDrop(e) { e.preventDefault(); }
+        
+        function drag(e) {
+            e.dataTransfer.setData("text", e.target.id);
+            const rect = e.target.getBoundingClientRect();
+            e.dataTransfer.setData("offsetX", e.clientX - rect.left);
+            e.dataTransfer.setData("offsetY", e.clientY - rect.top);
+        }
+        
+        function drop(e) {
+            e.preventDefault();
+            const id = e.dataTransfer.getData("text");
+            const dragged = document.getElementById(id);
+            const offsetX = e.dataTransfer.getData("offsetX");
+            const offsetY = e.dataTransfer.getData("offsetY");
+            
+            let target = e.target;
+            while(target && !target.id.match(/deck-zone|work-zone|final-slot/)) {
+                target = target.parentElement;
+            }
+            if(!target) return;
+
+            if(target.id === 'final-slot') {
+                const expected = expectedSequence[currentIdx];
+                if(dragged.dataset.suit === expected.suit && dragged.dataset.rank === expected.rank) {
+                    target.innerHTML = ''; 
+                    dragged.style.position = 'static';
+                    target.appendChild(dragged);
+                    currentIdx++;
+                    updateStatus();
+                } else {
+                    alert(`규칙 위반! 지금 제출할 카드는 ${expected.suit}${expected.rank}입니다.`);
+                }
+            } 
+            else if(target.id === 'work-zone') {
+                dragged.style.position = 'absolute';
+                const zoneRect = target.getBoundingClientRect();
+                dragged.style.left = (e.clientX - zoneRect.left - offsetX) + 'px';
+                dragged.style.top = (e.clientY - zoneRect.top - offsetY) + 'px';
+                target.appendChild(dragged);
+            }
+            else {
+                dragged.style.position = 'static';
+                target.appendChild(dragged);
+            }
+        }
+        resetDeck();
+    </script>
 </body>
 </html>
