@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>구구단 알고리즘 설계 워크시트</title>
+    <style>
+        :root {
+            --bg-body: #1e1e1e;
+            --bg-card: #252526;
+            --bg-input: #333333;
+            --text-main: #cccccc;
+            --text-bright: #ffffff;
+            --primary: #007acc;
+            --accent: #ff9800;
+            --border: #444;
+        }
+
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+            background: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 850px;
+            width: 100%;
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+        }
+
+        h1 {
+            color: var(--text-bright);
+            font-size: 1.8rem;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 15px;
+            margin-top: 0;
+            text-align: center;
+        }
+
+        .mission-box {
+            background: #2d2d30;
+            border-left: 5px solid var(--accent);
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .mission-box strong { color: var(--text-bright); }
+
+        .step-title {
+            font-size: 1.2rem;
+            color: var(--text-bright);
+            margin-top: 30px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-title span {
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+        }
+
+        /* 입력 폼 스타일 */
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-bright);
+            font-family: inherit;
+            font-size: 1rem;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            resize: none;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 8px rgba(0, 122, 204, 0.4);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* 인쇄 및 완료 버튼 */
+        .btn-container {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-submit { background: var(--primary); color: white; }
+        .btn-submit:hover { background: #0062a3; }
+        .btn-print { background: #4e4e50; color: white; }
+        .btn-print:hover { background: #616163; }
+
+        /* 인쇄 전용 스타일 (학생들이 프린트해서 제출하거나 PDF로 저장할 때) */
+        @media print {
+            body { background: white; color: black; padding: 0; }
+            .container { box-shadow: none; border: none; background: white; padding: 0; }
+            h1, .step-title, label { color: black !important; }
+            .step-title span { background: black !important; color: white !important; }
+            input, textarea, select { background: white !important; color: black !important; border: 1px solid #ccc !important; }
+            .btn-container, .mission-box { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📐 구구단 프로그램 알고리즘 설계 워크시트</h1>
+    
+    <div class="mission-box">
+        <strong>[미션]</strong> 컴퓨터에게 구구단을 출력하라는 명령을 내리려고 합니다. 컴퓨터는 일일이 2x1=2, 2x2=4를 다 적어주지 않으면 스스로 규칙을 깨닫지 못합니다. 효율적인 프로그래밍을 위해 어떤 **규칙과 반복**이 필요한지 나만의 알고리즘을 설계해 봅시다!
+    </div>
+
+    <form id="workbook-form" onsubmit="event.preventDefault();">
+        <div class="grid-2">
+            <div>
+                <label for="student-id">학번</label>
+                <input type="text" id="student-id" placeholder="예: 20101">
+            </div>
+            <div>
+                <label for="student-name">이름</label>
+                <input type="text" id="student-name" placeholder="홍길동">
+            </div>
+        </div>
+
+        <div class="step-title"><span>1</span> 변수(Variable) 설계하기</div>
+        <p style="font-size: 0.9rem; margin-top: -10px; color: #888;">구구단을 만들기 위해 어떤 데이터(숫자)가 계속 변해야 할까요?</p>
+        
+        <div class="grid-2">
+            <div>
+                <label for="var-dan">단(Dan)을 결정하는 변수</label>
+                <textarea id="var-dan" rows="2" placeholder="몇 단을 출력할지 결정하는 변수가 필요할까요? 그 변수의 역할은 무엇인가요?"></textarea>
+            </div>
+            <div>
+                <label for="var-count">곱해지는 수(1~9) 변수</label>
+                <textarea id="var-count" rows="2" placeholder="1부터 9까지 하나씩 커지며 곱해지는 변수의 규칙을 설명해 보세요."></textarea>
+            </div>
+        </div>
+
+        <div class="step-title"><span>2</span> 제어 구조(반복과 조건) 설계하기</div>
+        
+        <label for="logic-loop">컴퓨터에게 어떤 부분을 "반복"하라고 명령해야 할까요?</label>
+        <textarea id="logic-loop" rows="3" placeholder="예: 곱해지는 수가 1부터 시작해서 9가 될 때까지 1씩 더하며 출력을 반복한다."></textarea>
+
+        <label for="logic-end">반복문이 멈추는 조건(종료 조건)은 무엇인가요?</label>
+        <textarea id="logic-end" rows="2" placeholder="변수가 어떤 상태가 되었을 때 컴퓨터가 반복을 멈춰야 할지 적어주세요."></textarea>
+
+        <div class="step-title"><span>3</span> 의사코드(Pseudocode) 작성하기</div>
+        <p style="font-size: 0.9rem; margin-top: -10px; color: #888;">실제 코딩을 하기 전, 사람이 이해할 수 있는 말로 논리적 순서를 적어보세요.</p>
+        
+        <label for="pseudo-code">나만의 말로 작성하는 구구단 알고리즘 순서</label>
+        <textarea id="pseudo-code" rows="6" placeholder="1. 사용할 단의 숫자를 정한다.&#13;2. 곱할 숫자를 1로 정한다.&#13;3. 단과 곱할 숫자를 곱해 화면에 출력한다.&#13;4. ... (자유롭게 생각을 이어서 적어보세요)"></textarea>
+
+        <div class="btn-container">
+            <button type="button" class="btn-submit" onclick="saveData()">💾 작성 완료</button>
+            <button type="button" class="btn-print" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function saveData() {
+        const id = document.getElementById('student-id').value;
+        const name = document.getElementById('student-name').value;
+        
+        if(!id || !name) {
+            alert("학번과 이름을 먼저 입력해 주세요!");
+            return;
+        }
+        
+        // 작성한 내용을 브라우저에 임시 저장 (새로고침 방지용)
+        const workbookData = {
+            id: id,
+            name: name,
+            dan: document.getElementById('var-dan').value,
+            count: document.getElementById('var-count').value,
+            loop: document.getElementById('logic-loop').value,
+            end: document.getElementById('logic-end').value,
+            pseudo: document.getElementById('pseudo-code').value
+        };
+        
+        localStorage.setItem(`workbook_${id}`, JSON.stringify(workbookData));
+        alert(`🎉 ${name} 학생의 알고리즘 설계도가 성공적으로 기록되었습니다!\n[인쇄 / PDF 저장] 버튼을 눌러 제출용 파일을 만드세요.`);
+    }
+
+    // 기존에 작성하던 내용이 있으면 불러오기
+    window.onload = function() {
+        document.getElementById('workbook-form').reset();
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>국어 지문 타자 연습 - 기록 리셋 모드</title>
+    <style>
+        :root { --primary: #4a90e2; --bg: #f4f7f6; --accent: #ff9800; --success: #28a745; }
+        body { font-family: 'Malgun Gothic', sans-serif; background-color: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; transition: cursor 0.3s; }
+        .container { max-width: 850px; width: 100%; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
+        
+        /* 타이핑 중 마우스 숨김 */
+        .typing-mode { cursor: none !important; }
+
+        .header-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        h1 { font-size: 1.3rem; color: #333; margin: 0; }
+        .best-score-box { background: var(--accent); color: white; padding: 10px 20px; border-radius: 30px; font-weight: bold; box-shadow: 0 4px 10px rgba(255,152,0,0.3); transition: transform 0.2s; }
+        .new-record { transform: scale(1.1); background: var(--success); }
+
+        #target-text {
+            font-size: 1.4rem; line-height: 1.7; margin-bottom: 15px; padding: 25px;
+            background: #fff8e1; border-radius: 12px; border: 2px solid #ffd54f;
+            min-height: 100px; display: flex; align-items: center; justify-content: center;
+            word-break: keep-all; color: #222; font-weight: bold; white-space: pre-wrap; text-align: left;
+        }
+
+        #input-field {
+            width: 100%; height: 150px; padding: 20px; font-size: 1.4rem; line-height: 1.7;
+            border: 3px solid #ddd; border-radius: 12px; outline: none; box-sizing: border-box;
+            transition: 0.3s; resize: none; font-family: inherit; background: #fafafa;
+        }
+        #input-field:focus { border-color: var(--primary); background: #ffffff; }
+
+        .info-bar {
+            display: flex; justify-content: space-around; margin-top: 20px;
+            background: #f8f9fa; padding: 15px; border-radius: 10px; border: 1px solid #eee;
+        }
+        .info-item { display: flex; flex-direction: column; gap: 5px; }
+        .info-label { font-size: 0.8rem; color: #777; font-weight: bold; }
+        .info-value { font-weight: bold; font-size: 1.3rem; color: #333; }
+
+        #progress-bar-container { width: 100%; height: 10px; background: #eee; border-radius: 5px; margin-top: 15px; overflow: hidden; }
+        #progress-inner { width: 0%; height: 100%; background: var(--primary); transition: 0.4s; }
+        
+        #log { margin-top: 20px; text-align: left; max-height: 120px; overflow-y: auto; font-size: 0.85rem; color: #666; border-top: 1px solid #eee; padding-top: 10px; }
+        .wrong-flash { background-color: #ffdce0 !important; animation: shake 0.2s; }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 100% { transform: translateX(0); } }
+    </style>
+</head>
+<body id="main-body">
+
+<div class="container">
+    <div class="header-box">
+        <h1>✍️ 국어 지문 타자 연습 </h1>
+        <div class="best-score-box" id="best-box">🏆 이번 판 최고: <span id="high-score">0</span> 타</div>
+    </div>
+    
+    <div id="target-text">지문을 분석 중입니다...</div>
+    
+    <textarea id="input-field" placeholder="타이핑을 시작하면 마우스가 사라집니다. [F5]를 누르면 기록이 리셋됩니다." autocomplete="off" autofocus></textarea>
+    
+    <div id="progress-bar-container">
+        <div id="progress-inner"></div>
+    </div>
+
+    <div class="info-bar">
+        <div class="info-item">
+            <span class="info-label">방금 문장 속도</span>
+            <span class="info-value" id="current-wpm" style="color:var(--accent)">0</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">전체 평균 속도</span>
+            <span class="info-value" id="avg-wpm" style="color:var(--primary)">0</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">진행 상황</span>
+            <span class="info-value"><span id="current-count">0</span> / <span id="total-count">0</span></span>
+        </div>
+    </div>
+
+    <div id="log"><strong>[기록 로그]</strong></div>
+</div>
+
+<script>
+    const longText = `언니 잘 지내요? 언니를 언니라 불러보는 게 얼마 만인지 모르겠어요. 실은 오늘 언니 이름을 보고도, 언니가 언니인지 몰라 한참을 쳐다봤어요. 언니도 제 이름은 아는데 성이 떠오르지 않아 집 안을 한바탕 뒤졌다고 했지요? 어떻게 성도 모르는 사람이 그리울 수 있을까 피식 웃다가, 엽서를 내려놓고 부직포에 싸인 물건의 포장을 끌러봤어요. 그러곤 내용물을 든 채 한동안 그 자리에 붙박여 있었답니다. 얼마 뒤 지나가던 후배가 묻데요. 거기 무슨 나쁜 소식이라도 적힌 거냐고. 언니, 저는 지금 제 방에 앉아 있어요. 서울에서 구한 여섯 번째 자취방이에요. 언니와 같이 있던 데를 포함하면 일곱 번째일까요? 거기는 방이 아니라 칸이었는데. 사임당독서실. 여성 전용이니 신사임당처럼 훌륭한 아내이자 어머니가 되라고 그렇게 지었을 텐데. 정작 그 안에는 훌륭해지는 것까지는 바라지 않아도 보통의 기준에 다다르기 위해 안간힘을 쓰는 여자들이 많았지요. 무엇이 보통인지는 모르지만, 그저 사람들이 그렇게 부르는 곳 언저리에 금이라도 한번 밟아보려 애쓰는 사람들이지요. 언니는 전북에서 사범대학을 졸업한 아가씨. 나는 부모님께 효도해야 된다는 각오로 충남에서 올라온 재수생이었지요. 거기서 1년. 주위 여자들은 몇 번 바뀌었지만 언니와 저는 처음부터 쭉 같은 자리에 있었단 걸 기억해요. 한 칸에 네 명, 칸과 칸 사이에 벽이 아니라 커튼이 있고, 잠을 잘 땐 책상 위로 의자를 올려야 하는 데서, 그래도 늘 예약 대기자가 줄을 설 정도로 인기가 많던 그곳에서, 언니와 나, 등을 맞댄 채 자주 밤을 새우곤 했잖아요. 그래서인지 지금도 언니를 생각하면 제일 먼저 뒷모습이 떠올라요. 침침한 스탠드 아래서 밤새 뭔가 쓰고 외던 언니의 굽은 어깨가요. 아마 언니 눈에 저 뒤태도 비슷하게 보였겠죠? 우리 둘 다 꿈 말고도 이고 있는 것이 많았으니. 그래도 언니가 제 뒷모습을 본 것보다 제가 언니 뒷모습을 본 적이 더 많을 거예요. 눈꺼풀 위로 산사태처럼 쏟아지는 잠을 어쩌지 못해 만날 헤드뱅잉만 하다, 먼저 잠자리에 든 건 제 쪽이었으니까요. 언니, 여기 제 앞에는 공책만 한 창이 하나 있어요. 열리진 않고 장식처럼 그냥 박혀 있는 거예요. 테두리도 손잡이도 없는 유리판인데 나름 신축 건물이라고 멋을 내느라 그런 모양이에요. 그래도 창은 창이라고 동네 모습이 훤히 내다보이는데, 이 집이 도로를 등지고 있어 창 너머로 온통 주택가뿐이에요. 건물 간격이 좁아 볕 들 겨를이 없는 다세대주택과 크고 작은 빌라, 다락이 세모나게 솟는 1980년대풍 양옥을 비롯해 지은 지 얼마 안 된 아파트촌 따위가 얕은 산등성이를 따라 주르륵 연결돼 있어요. 얼핏 봄 쓸쓸하지만 고요하고 가지런한 풍경이에요. 하루 일을 마치고 고단하게 잠든 서울의 얼굴 같기도 하고요. 지금은 새벽이라 불 밝힌 집이 많지 않은데, 몇몇은 추위 덕에 더 오롯하게 빛나네요. 그중 저기 제일 꼭대기, 뉴타운에 들어선 아파트는 저녁마다 회사 로고를 본뜬 네온등을 밝히는데요, 그게 어두운 허공에 붕 떠 있으면, 어는 땐 천공의 섬 같고, 또 어떤 때는 모두에게서 모든 것을 승인받은, 이 세기의 대표적인 문장(紋章)처럼 보이기도 해요. 그래서 저는 이따금 유리벽에 코를 박은 스푸트니크의 개를 떠올리며 밖을 바라봐요. 그러면 이 방이 어떤 공간이나 장소가 아닌, 어디론가 계속 이동 중인 물체처럼 느껴지거든요. 이제 저쪽 세계와는 같은 시공을 공유할 수 없겠다는 예감을 안고, 묵직한 가속도를 내며 지구로부터 멀어지는 우주선처럼요. 아무튼 오늘도 멀리 캄캄한 도시 위엔 붉고 노랗고 희고 푸른 불빛들이 알사탕처럼 뿌려져 있어요. 깨물어 먹고 싶을 만큼, 예쁜 서울이에요, 여기. 언니, 언니를 본 지 벌써 10년이 흘렀네요. 보푸라기 인 폴리에스테르 재질의 책가방을 메고, 알람 소리 어지러운 육교를 지나 ‘노량도’에 입성한 게 엊그제 같은데. ‘합격해야 탈출 할 수 있는 섬’이라고, 다들 그런 식으로 우스갯소릴 하곤 했잖아요. 그때는 언니가 되게 언니처럼 느껴졌는데 이제 저도 서른이네요. 그사이 언니에게도 몇 줄로는 요약할 수 없는 시간들이 지나갔겠죠? 바람이 계절을 거둬가듯 세월이 언니로부터 앗아간 것들이 있을 테죠? 단순히 ‘기회비용’이라고만 하기엔 아쉽게 놓쳐버려 아직도 가슴을 아리게 하는 것도. 말해도 어쩔 수 없어 홀로 감당해야 할 비밀과 사연들도요. 그래서 사실 오늘 언니가 8년 동안 임용이 안 됐었단 얘기를 들었을 때 가슴이 먹먹했어요. 8년. 8년이라니. 괄호 속에 갇힌 물음표처럼 칸에 갇혀 조금씩 시들어갔을 언니의 스물넷, 스물다섯, 스물여섯…… 서른하나가 가늠이 안 됐거든요. 합격자 발표를 기다리는 동안 마음속에 생기는 온갖 기대와 암시, 긴장과 비관에 대해서라면 저도 꽤 아닌데. 자식 노릇, 애인 노릇 등 온갖 ‘도리’들을 미뤄오다 잃게 된 관계들에 대해서도 전혀 모르는 바는 아닌데. 좁고 캄캄한 칸에서 오답 속에 고개를 묻은 채, 혼자 나이 먹어갔을 언니의 청춘을 생각하니 마음이 아팠어요. 저요? 언니도 알다시피 그해 저는 J대 불문과에 합격했어요. 그게 언니가 아는 제 안부의 전부지요? 그러니 저희 과 사무실로 우편을 보내신 걸 테고요. 언니가 제 전화번호를 물어봤는데 조교가 ‘바뀐 연락처를 아는 사람이 없다’고 했다는 걸 들었어요. 실은 사정이 생겨 그간 사람들을 거의 만나지 않아왔거든요. 휴대전화를 없앤 지도 꽤 됐고. 소포가 왔으니 찾아가란 메일을 받고 며칠을 고민하다 학교에 들렀어요. 그리고 오늘 언니가 보내준 엽서와 선물을 받았어요. 아 참 언니, 이번에 아기 엄마 되신 거 진심으로 축하해요. 언니를 못 본 새 언니가 그렇게 멋진 일을 해내리라곤 상상하지 못했어요. 만일 제가 언니의 아기라면 내 엄마가 언니란 사실이 무척 기뻤을 거예요. 저는 지난 10년간 여섯 번의 이사를 하고, 열 몇 개의 아르바이트를 하고, 두어 명의 남자를 만났어요. 다만 그랬을 뿐인데. 정말 그게 다인데. 이렇게 청춘이 가버린 것 같아 당황하고 있어요. 그동안 나는 뭐가 변했을까. 그저 좀 씀씀이가 커지고, 사람을 믿지 못하고, 물건 보는 눈만 높아진, 시시한 어른이 돼버린 건 아닌가 불안하기도 하고요. 이십대에는 내가 뭘 하든 그게 다 과정인 것 같았는데, 이제는 모든 게 결과일 따름인 듯해 초조하네요. 언니는 나보다 다섯 살이나 많으니까 제가 겪은 모든 일을 거쳐갔겠죠? 어떤 건 극복도 했을까요? 때로는 추억이 되는 것도 있을까요? 세상에 아무것도 아닌 것은 없는데. 다른 친구들은 무언가 됐거나 되고 있는 중인 것 같은데. 저 혼자만 이도 저도 아닌 채, 아무것도 아닌 것이 되어가고 있는 건 아닐까 불안해져요. 아니, 어쩌면 이미 아무것도 아닌 것보다 더 나쁜 것이 되어 있는지도 모르고요. 소식을 전하면서도 한편으론 언니가 이런 얘기는 너무 많이 들어봤다고 할까 봐 겁이 나요. 언니는 이제 육아와 적금, 시댁과의 관계나 건강 문제에 부딪힐 테고. 이전에 절박했던 문제는 그다음 과제들에게 자리를 내주어야 한다는 걸 아는 나이일 테니까요. 그렇지만 지금은 이 얘길 언니에게밖에 할 수 없어 편지를 써요. 다 써놓고 끝끝내 부치지 못할지라도. 오늘 밤 제가 할 수 있는 일을 하려고요.`;
+
+    const sentences = longText.split(/(?<=[.!?])\s+|\n+/).map(s => s.trim()).filter(s => s.length > 1);
+
+    let currentIndex = 0;
+    let sentenceStartTime = null;
+    let totalStartTime = null;
+    let totalTypedChars = 0;
+    
+    // localStorage 대신 변수만 사용 (새로고침 시 초기화)
+    let highScore = 0; 
+
+    const body = document.getElementById('main-body');
+    const targetDisplay = document.getElementById('target-text');
+    const inputField = document.getElementById('input-field');
+    const avgWpmDisplay = document.getElementById('avg-wpm');
+    const currentWpmDisplay = document.getElementById('current-wpm');
+    const highScoreDisplay = document.getElementById('high-score');
+    const bestBox = document.getElementById('best-box');
+    const currentCountDisplay = document.getElementById('current-count');
+    const totalCountDisplay = document.getElementById('total-count');
+    const progressInner = document.getElementById('progress-inner');
+    const logDisplay = document.getElementById('log');
+
+    function init() {
+        if (sentences.length === 0) return;
+        highScoreDisplay.innerText = "0";
+        totalCountDisplay.innerText = sentences.length;
+        showSentence();
+    }
+
+    function showSentence() {
+        if (currentIndex < sentences.length) {
+            targetDisplay.innerText = sentences[currentIndex];
+            inputField.value = "";
+            currentCountDisplay.innerText = currentIndex + 1;
+            progressInner.style.width = ((currentIndex) / sentences.length * 100) + "%";
+            sentenceStartTime = null; 
+        } else {
+            progressInner.style.width = "100%";
+            targetDisplay.innerHTML = "🎉 모든 지문을 완료했습니다! 수고하셨습니다.";
+            inputField.disabled = true;
+            body.classList.remove('typing-mode');
+        }
+    }
+
+    inputField.addEventListener('input', () => {
+        if (!totalStartTime) totalStartTime = new Date().getTime();
+        if (!sentenceStartTime) sentenceStartTime = new Date().getTime();
+        body.classList.add('typing-mode');
+    });
+
+    window.addEventListener('mousemove', () => {
+        body.classList.remove('typing-mode');
+    });
+
+    inputField.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault(); 
+            const typed = inputField.value.trim().replace(/\s+/g, ' ');
+            const target = sentences[currentIndex].replace(/\s+/g, ' ');
+
+            if (typed === target) {
+                const now = new Date().getTime();
+                const sDur = (now - sentenceStartTime) / 1000 / 60;
+                const cWpm = Math.floor((target.length * 2.5) / sDur);
+                totalTypedChars += target.length;
+                const tDur = (now - totalStartTime) / 1000 / 60;
+                const aWpm = Math.floor((totalTypedChars * 2.5) / tDur);
+
+                currentWpmDisplay.innerText = cWpm;
+                avgWpmDisplay.innerText = aWpm;
+
+                // 최고 기록 경신 (로컬 저장소 없이 현재 변수에서만 체크)
+                if (cWpm > highScore) {
+                    highScore = cWpm;
+                    highScoreDisplay.innerText = highScore;
+                    bestBox.classList.add('new-record');
+                    setTimeout(() => bestBox.classList.remove('new-record'), 800);
+                }
+                
+                const logItem = document.createElement('div');
+                logItem.innerText = `문장 ${currentIndex + 1}: ${cWpm}타 (평균: ${aWpm}타)`;
+                logDisplay.prepend(logItem);
+
+                currentIndex++;
+                showSentence();
+            } else {
+                inputField.classList.add('wrong-flash');
+                setTimeout(() => inputField.classList.remove('wrong-flash'), 400);
+            }
+        }
+    });
+
+    init();
+</script>
+
+</body>
+</html>
